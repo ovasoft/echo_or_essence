@@ -1,0 +1,92 @@
+# B4ELM base corpus: filtering + decontamination config.
+# Relative paths resolve against this file's directory.
+# Run `inspect` on each source first; the subject regexes below are starting points.
+
+batch_size: 64
+
+output:
+  dir: work/base_corpus
+  docs_per_shard: 10000
+  audit_samples_per_reason: 50
+  seed: 0
+
+decontam:
+  index_path: work/decontam_index.npy
+  ngram_sizes: [8]          # any 13-gram match implies an 8-gram match; add 6 for archaic phrasing
+  min_content_words: 2      # windows of only stopwords are not indexed
+  min_hits: 1               # paragraph dropped at this many matching n-grams
+  references:
+    bible: [data/bible/*.txt]        # KJV, WEB, BSB plain text (eBible.org)
+    stoic: [data/stoic/*.txt]        # Epictetus, Marcus Aurelius, Seneca (Gutenberg; headers stripped)
+
+filters:
+  religious_max_hits: 0     # paragraph dropped if religious hits exceed this
+  moral_max_hits: 1         # paragraph dropped if moral-lexicon hits exceed this
+  normative_ratio_max: 0.2  # ... or if this share of its sentences is normative
+  min_doc_chars: 200
+  doc_block_scan_chars: 5000
+  extra_title_block: []     # added to lexicons.TITLE_BLOCK_DEFAULT
+
+sources:
+  libretexts:
+    kind: libretexts
+    hf_name: common-pile/libretexts_filtered
+    keep_libraries:           # library subdomain -> optional path regex (null = whole library)
+      math: null
+      phys: null
+      chem: null
+      bio: null
+      eng: null
+      geo: null
+      stats: null
+      biz: "/Bookshelves/Accounting"
+      human: "/Bookshelves/(Art|Languages|Linguistics|History)"
+      k12: "/Bookshelves/(Mathematics|Science|Physics|Chemistry|Biology)"
+
+  openstax:
+    kind: openstax
+    hf_name: HuggingFaceTB/openstax_paragraphs
+    allow_title: "algebra|calculus|statistic|trigonometr|mathemat|physics|astronomy|chemistry|biology|microbiology|anatomy|computer|python|data science|programming|accounting|history"
+    deny_title: "ethic|philosoph|psycholog|sociolog|government|politic|econom|nursing|health|lifespan|college success|writing|entrepreneur|management|marketing|business law|organizational|anthropolog|religion|nutrition"
+
+  pressbooks:
+    kind: pressbooks
+    hf_name: common-pile/pressbooks_filtered
+    allow_subject: "mathemat|algebra|calculus|statistic|physics|chemistr|biolog|computer|programming|engineering|accounting|language|linguistic|grammar|spanish|french|german|chinese|japanese|latin|\\bart\\b|art history|drawing|painting|history"
+    deny_subject: "ethic|philosoph|religio|psycholog|sociolog|politic|health|nursing"
+
+  wikibooks:
+    kind: wikibooks
+    hf_name: common-pile/wikimedia_filtered
+    wiki_match: wikibooks
+    allow_title: "algebra|calculus|geometry|statistic|probability|mathemat|physics|chemistr|biolog|computer|programming|python|java|c\\+\\+|haskell|rust|algorithm|data structure|linux|engineering|electronic|accounting|grammar|language|linguistic|spanish|french|german|latin|art|drawing|history"
+    deny_title: "ethic|philosoph|religio|bible|theolog|politic"
+
+  doab:
+    kind: title_filtered
+    hf_name: common-pile/doab_filtered
+    enabled: false            # volume source; enable after the textbook-only pilot
+    allow_title: "mathemat|physics|chemistr|biolog|engineering|computer|algorithm|software|programming|statistic|linguistic|grammar|geolog|astronom"
+    deny_title: "ethic|moral|religio|theolog|philosoph|society|social|politic|justice|gender"
+    max_created: "2022-11-30"
+
+  arxiv:
+    kind: passthrough
+    hf_name: common-pile/arxiv_papers_filtered
+    enabled: false            # volume source; academic register
+    max_created: "2022-11-30" # exclude the LLM era
+    doc_blocklist:            # matched in the first doc_block_scan_chars of each paper
+      - "\\b(ai|value|llm|model|human) alignment\\b"
+      - "aligned (language )?models?"
+      - "\\brlhf\\b"
+      - "reinforcement learning from human feedback"
+      - "constitutional ai"
+      - "\\bharmless(ness)?\\b"
+      - "\\b(algorithmic|group|individual) fairness\\b"
+      - "fairness (in|of|for) (machine learning|ml|ai|classifiers?)"
+      - "societal (impact|implications)"
+      - "human values"
+      - "\\bethic"
+      - "\\bmoral"
+      - "\\bbias mitigation\\b"
+      - "ai safety"
