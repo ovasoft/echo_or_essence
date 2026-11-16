@@ -1,0 +1,54 @@
+# Genealogies from Genesis 5, 11, 21-25, 29-30, 38, 41 (KJV spellings).
+# Facts are given in the direction the KJV states them ("X begat Y").
+# Before use: check each template's `seen` flag against the training text. The Bible also
+# says "Y the son of X" in places, so "reverse" questions are not a clean reversal test on
+# real text; the synthetic world (tests/) gives the controlled version.
+relations:
+  father_of:
+    train_direction: head
+    statement: "{head} begat {tail}."
+    templates:
+      - {text: "{head} begat", seen: true}
+      - {text: "{head} was the father of", seen: false}
+      - {text: "The son of {head} was named", seen: false}
+      - {text: "The father of {tail} was", seen: false}
+      - {text: "{tail} was the son of", seen: true}
+    ancestor:
+      classification: "Question: Was {a} an ancestor of {b}? Answer:"
+      comparison: "Question: Who lived earlier, {a} or {b}? Answer:"
+composites:
+  grandfather_of:
+    path: [father_of, father_of]
+    templates:
+      - "The grandfather of {tail} was"
+      - "{tail} was the grandson of"
+      - "The grandson of {head} was named"
+facts:
+  - [Adam, father_of, Seth]
+  - [Seth, father_of, Enos]
+  - [Enos, father_of, Cainan]
+  - [Cainan, father_of, Mahalaleel]
+  - [Mahalaleel, father_of, Jared]
+  - [Jared, father_of, Enoch]
+  - [Enoch, father_of, Methuselah]
+  - [Methuselah, father_of, Lamech]
+  - [Lamech, father_of, Noah]
+  - [Noah, father_of, Shem]
+  - [Noah, father_of, Ham]
+  - [Noah, father_of, Japheth]
+  - [Terah, father_of, Abraham]   # "Abram" in Genesis 11; add an alias template if needed
+  - [Terah, father_of, Nahor]
+  - [Terah, father_of, Haran]
+  - [Abraham, father_of, Ishmael]
+  - [Abraham, father_of, Isaac]
+  - [Isaac, father_of, Esau]
+  - [Isaac, father_of, Jacob]
+  - [Jacob, father_of, Reuben]
+  - [Jacob, father_of, Simeon]
+  - [Jacob, father_of, Levi]
+  - [Jacob, father_of, Judah]
+  - [Jacob, father_of, Joseph]
+  - [Jacob, father_of, Benjamin]
+  - [Judah, father_of, Pharez]
+  - [Joseph, father_of, Manasseh]
+  - [Joseph, father_of, Ephraim]
